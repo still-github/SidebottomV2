@@ -1,0 +1,212 @@
+
+package org.firstinspires.ftc.robotcontroller.external.samples;
+
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
+
+
+@TeleOp(name="SidebottomV3Tele", group="TeleOp")
+@Disabled
+public class SidebottomV3Tele extends OpMode
+{
+    // Declare OpMode members.
+    ElapsedTime runtime = new ElapsedTime();
+    DcMotor leftMotor = null;
+    DcMotor rightMotor = null;
+    DcMotor hMotor = null;
+    DcMotor turretMotor = null;
+    DcMotor armMotor = null;
+    CRServo leftGrip = null;
+    CRServo rightGrip = null;
+    boolean tank = false
+    boolean waypoint1 = false;
+    boolean waypoint2 = false;
+    int waypoint1x = 0;
+    int waypoint1y = 0;
+    int waypoint2x = 0;
+    int waypoint2y = 0;
+    boolean isGripped = false;
+    double leftPower;
+    double rightPower;
+    double hPower;
+    double turretPower = 0;
+    double armPower = 0;
+    double leftGripPower;
+    double rightGripPower;
+    double githubtest;
+    /*
+     * Code to run ONCE when the driver hits INIT
+     */
+    @Override
+    public void init() {
+        telemetry.addData("Status", "Initialized");
+
+        leftMotor  = hardwareMap.get(DcMotor.class, "leftMotor");
+        rightMotor = hardwareMap.get(DcMotor.class, "rightMotor");
+        hMotor = hardwareMap.get(DcMotor.class, "hMotor");
+        turretMotor = hardwareMap.get(DcMotor.class, "turretMotor");
+        armMotor = hardwareMap.get(DcMotor.class, "armMotor");
+        leftGrip = hardwareMap.get(CRServo.class, "leftGrip");
+        rightGrip = hardwareMap.get(CRServo.class, "rightGrip");
+
+        // Most robots need the motor on one side to be reversed to drive forward
+        // Reverse the motor that runs backwards when connected directly to the battery
+        leftMotor.setDirection(DcMotor.Direction.FORWARD);
+        rightMotor.setDirection(DcMotor.Direction.REVERSE);
+        hMotor.setDirection(DcMotor.Direction.FORWARD);
+        turretMotor.setDirection(DcMotor.Direction.FORWARD);
+        armMotor.setDirection(DcMotor.Direction.FORWARD);
+        
+
+        // Tell the driver that initialization is complete.
+        telemetry.addData("Status", "Initialized");
+    }
+
+    /*
+     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
+     */
+    @Override
+    public void init_loop() {
+    }
+
+    /*
+     * Code to run ONCE when the driver hits PLAY
+     */
+    @Override
+    public void start() {
+        runtime.reset();
+        turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        hMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        
+        leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        hMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+    }
+
+    /*
+     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
+     */
+    @Override
+    public void loop() {
+        // Setup a variable for each drive wheel to save power level for telemetry
+
+        if (gamepad1.dpad_up) {
+            tank = false;
+        } else if (gamepad1.dpad_down) {
+            tank = true;
+        }
+
+        if (gamepad2.left_trigger > 0.5){
+            waypoint1 = true;
+            waypoint1 = false;
+        }
+        if (gamepad2.right_trigger > 0.5){
+            waypoint2 = true;
+            waypoint1 = false;
+        }
+        if (gamepad2.x){
+            waypoint1 = false;
+            waypoint2 = false;
+        }
+
+        if (!tank){
+        leftPower = gamepad1.left_stick_y - gamepad1.right_stick_x;
+        rightPower = gamepad1.left_stick_y + gamepad1.right_stick_x;
+        hPower = gamepad1.left_stick_x;
+        }else{
+            leftPower = gamepad1.left_stick_y;
+            rightPower = gamepad1.right_stick_y;
+            hPower = gamepad1.right_trigger - gamepad1.left_trigger;
+        }
+        
+        if (!waypoint1 && !waypoint2){
+        armPower = 0.5 * gamepad2.left_stick_y;
+        turretPower = gamepad2.right_stick_x;
+        }
+
+        if(gamepad2.a){
+            isGripped = true;
+        }
+        if(gamepad2.b){
+            isGripped = false;
+        }
+
+        if (isGripped){
+            leftGripPower = 0.1;
+            rightGripPower = 0.1;
+        }else{
+            leftGripPower = 0;
+            rightGripPower = 0;
+        }
+
+
+        //ight it's waypoint time :)
+
+        if (gamepad2.left_bumper){
+            waypoint1x = turretMotor.getCurrentPosition();
+            waypoint1y = armMotor.getCurrentPosition();
+        }
+
+        if (gamepad2.right_bumper){
+            waypoint2x = turretMotor.getCurrentPosition();
+            waypoint2y = armMotor.getCurrentPosition();
+        }
+
+        if(waypoint1){
+            turretMotor.setTargetPosition(waypoint1x);
+            armMotor.setTargetPosition(waypoint1y);
+            turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            turretPower = 0.5;
+            armPower = 0.5;
+            if (!turretMotor.isBusy() && !armMotor.isBusy()) {
+                waypoint1 = false;
+                turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
+        }
+        if(waypoint2){
+            turretMotor.setTargetPosition(waypoint2x);
+            armMotor.setTargetPosition(waypoint2y);
+            turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            turretPower = 0.5;
+            armPower = 0.5;
+            if (!turretMotor.isBusy() && !armMotor.isBusy()) {
+                waypoint2 = false;
+                turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            }
+        }
+       
+        
+        leftMotor.setPower(leftPower);
+        rightMotor.setPower(rightPower);
+        hMotor.setPower(hPower);
+        turretMotor.setPower(turretPower);
+        armMotor.setPower(armPower);
+        leftGrip.setPower(leftGripPower);
+        rightGrip.setPower(rightGripPower);
+
+        
+    } 
+
+    /*
+     * Code to run ONCE after the driver hits STOP
+     */
+    @Override
+    public void stop() {
+    }
+
+}
