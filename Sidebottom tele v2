@@ -30,6 +30,8 @@ public class SidebottomV3Tele extends OpMode
     int waypoint1y = 0;
     int waypoint2x = 0;
     int waypoint2y = 0;
+    int waypoint1l = 0;
+    int waypoint2l = 0;
     boolean isGripped = false;
     double leftPower;
     double rightPower;
@@ -107,11 +109,11 @@ public class SidebottomV3Tele extends OpMode
             tank = true;
         }
 
-        if (gamepad2.left_trigger > 0.5){
+        if (gamepad2.left_trigger > 0.5 || gamepad1.left_trigger > 0.5){
             waypoint1 = true;
             waypoint1 = false;
         }
-        if (gamepad2.right_trigger > 0.5){
+        if (gamepad2.right_trigger > 0.5 || gamepad1.right_trigger > 0.5){
             waypoint2 = true;
             waypoint1 = false;
         }
@@ -120,11 +122,13 @@ public class SidebottomV3Tele extends OpMode
             waypoint2 = false;
         }
 
-        if (!tank){
+        if (!tank && !waypoint1 && !waypoint2){
         leftPower = gamepad1.left_stick_y - gamepad1.right_stick_x;
         rightPower = gamepad1.left_stick_y + gamepad1.right_stick_x;
         hPower = gamepad1.left_stick_x;
-        }else{
+        }
+        
+        if (tank && !waypoint1 && !waypoint2){
             leftPower = gamepad1.left_stick_y;
             rightPower = gamepad1.right_stick_y;
             hPower = gamepad1.right_trigger - gamepad1.left_trigger;
@@ -133,7 +137,7 @@ public class SidebottomV3Tele extends OpMode
         if (!waypoint1 && !waypoint2){
         armPower = 0.5 * gamepad2.left_stick_y;
         turretPower = gamepad2.right_stick_x;
-        }
+        
 
         if(gamepad2.a){
             isGripped = true;
@@ -149,7 +153,7 @@ public class SidebottomV3Tele extends OpMode
             leftGripPower = 0;
             rightGripPower = 0;
         }
-
+    }
 
         //ight it's waypoint time :)
 
@@ -163,32 +167,64 @@ public class SidebottomV3Tele extends OpMode
             waypoint2y = armMotor.getCurrentPosition();
         }
 
+        if (gamepad1.left_bumper){
+            waypoint1l = leftMotor.getCurrentPosition();
+            waypoint1y = rightMotor.getCurrentPosition();
+        }
+
+        if (gamepad1.right_bumper){
+            waypoint2l = rightMotor.getCurrentPosition();
+            waypoint2r = leftMotor.getCurrentPosition();
+        }
+
         if(waypoint1){
+            isGripped = true;
             turretMotor.setTargetPosition(waypoint1x);
             armMotor.setTargetPosition(waypoint1y);
+            leftMotor.setTargetPosition(waypoint1l);
+            rightMotor.setTargetPosition(waypoint1r);
             turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            leftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             turretPower = 0.5;
             armPower = 0.5;
-            if (!turretMotor.isBusy() && !armMotor.isBusy()) {
+            leftPower = 0.5;
+            rightPower = 0.5;
+            if (!turretMotor.isBusy() && !armMotor.isBusy() && !rightMotor.isBusy() && !leftMotor.isBusy()) {
                 waypoint1 = false;
                 turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                isGripped = false;
             }
         }
         if(waypoint2){
+            isGripped = false;
             turretMotor.setTargetPosition(waypoint2x);
             armMotor.setTargetPosition(waypoint2y);
+            leftMotor.setTargetPosition(waypoint2l);
+            rightMotor.setTargetPosition(waypoint2r);
             turretMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            rightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            leftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             turretPower = 0.5;
             armPower = 0.5;
-            if (!turretMotor.isBusy() && !armMotor.isBusy()) {
+            leftPower = 0.5;
+            rightPower = 0.5;
+            if (!turretMotor.isBusy() && !armMotor.isBusy() && !rightMotor.isBusy() && !leftMotor.isBusy()) {
                 waypoint2 = false;
                 turretMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                isGripped = true;
             }
         }
+        
+        
        
         
         leftMotor.setPower(leftPower);
