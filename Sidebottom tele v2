@@ -63,7 +63,12 @@ public class SidebottomV3Tele extends OpMode
         hMotor.setDirection(DcMotor.Direction.FORWARD);
         turretMotor.setDirection(DcMotor.Direction.FORWARD);
         armMotor.setDirection(DcMotor.Direction.FORWARD);
-        
+
+        leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        hMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        turretMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
